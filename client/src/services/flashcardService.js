@@ -7,17 +7,17 @@ export const getFlashcards = async () => {
     return response.data;
 };
 
-export const addFlashcard = async (title, content) => {
-    const response = await axios.post(API_URL, { title, content });
+export const addFlashcard = async (title, content, deckId) => {
+    const response = await axios.post(API_URL, { title, content, deck_id: deckId });
     return response.data;
 };
 
-export const updateFlashcard = async (id, hidden) => {
-    const response = await axios.patch(`${API_URL}/${id}`, { hidden });
+export const getFlashcardsByDeck = async (deckId) => {
+    const response = await axios.get(`${API_URL}/deck/${deckId}`);
     return response.data;
 };
 
-export const deleteFlashcard = async (id) => {
-    const response = await axios.delete(`${API_URL}/${id}`);
+export const getDecks = async () => {
+    const response = await axios.get(`${API_URL}/decks`);
     return response.data;
 };

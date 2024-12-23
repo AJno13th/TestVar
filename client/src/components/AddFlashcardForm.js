@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
+import { addFlashcard } from '../services/flashcardService';
 
-const AddFlashcardForm = ({ onAdd }) => {
+const AddFlashcardForm = ({ currentDeck, fetchFlashcards }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onAdd(title, content);
-        setTitle('');
-        setContent('');
+        try {
+            console.log('Submitting flashcard:', { title, content, currentDeck });
+            await addFlashcard(title, content, currentDeck);
+            setTitle('');
+            setContent('');
+            fetchFlashcards();
+        } catch (error) {
+            console.error('Error adding flashcard:', error);
+            alert('Failed to add flashcard. Please try again.');
+        }
     };
 
     return (

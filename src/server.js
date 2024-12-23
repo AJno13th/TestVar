@@ -4,25 +4,24 @@ const cors = require('cors');
 const path = require('path');
 const flashcardRoutes = require('./routes/flashcardRoutes');
 
-const app = express(); // This initializes the app
+const app = express();
 
 app.use(bodyParser.json());
 app.use(cors());
 
-// This serves static files from the React frontend app
+// Serve static files from the React frontend app
 app.use(express.static(path.join(__dirname, '../client/build')));
 
-// API routes for flashcards
+// API routes
 app.use('/api/flashcards', flashcardRoutes);
 
-// This is a fallback route to serve the React app for any unknown routes
+// Fallback to serve React frontend
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
-// This starts the server
+// Start server
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
-

@@ -10,10 +10,13 @@ module.exports = {
             }
         });
     },
-
     addFlashcard: (req, res) => {
-        const { title, content } = req.body;
-        flashcardModel.addFlashcard(title, content, (err, id) => {
+        const { title, content, deck_id, user_id } = req.body;
+        if (!title || !content) {
+            return res.status(400).send('Title and content are required.');
+        }
+        console.log('Received payload:', req.body);
+        flashcardModel.addFlashcard(title, content, deck_id, user_id, (err, id) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
@@ -21,26 +24,33 @@ module.exports = {
             }
         });
     },
-
-    updateFlashcard: (req, res) => {
-        const { hidden } = req.body;
-        const { id } = req.params;
-        flashcardModel.updateFlashcard(id, hidden, (err) => {
+    getFlashcardsByDeck: (req, res) => {
+        const { deck_id } = req.params;
+        flashcardModel.getFlashcardsByDeck(deck_id, (err, rows) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
-                res.status(200).send('Flashcard updated');
+                res.json(rows);
             }
         });
     },
-
-    deleteFlashcard: (req, res) => {
-        const { id } = req.params;
-        flashcardModel.deleteFlashcard(id, (err) => {
+    addDeck: (req, res) => {
+        const { name, user_id } = req.body;
+        flashcardModel.addDeck(name, user_id, (err, id) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
-                res.status(200).send('Flashcard deleted');
+                res.status(201).json({ id });
+            }
+        });
+    },
+    getAllDecks: (req, res) => {
+        const { user_id } = req.query;
+        flashcardModel.getAllDecks(user_id, (err, rows) => {
+            if (err) {
+                res.status(500).send(err.message);
+            } else {
+                res.json(rows);
             }
         });
     },
