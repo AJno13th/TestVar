@@ -23,9 +23,10 @@ const FlashcardList = ({ flashcards, onToggleHidden, onDelete }) => {
                         padding: '10px',
                         margin: '10px 0',
                         backgroundColor: '#f9f9f9',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                     }}
                 >
-                    <strong>{card.title}</strong>
+                    <strong style={{ fontSize: '18px', color: '#333' }}>{card.title}</strong>
                     {visibleContent[card.id] && (
                         <p style={{ marginTop: '10px', color: '#555' }}>{card.content}</p>
                     )}

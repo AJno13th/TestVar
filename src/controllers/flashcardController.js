@@ -2,7 +2,8 @@ const flashcardModel = require('../models/flashcardModel');
 
 module.exports = {
     getAllFlashcards: (req, res) => {
-        flashcardModel.getAllFlashcards((err, rows) => {
+        const userId = req.userId; // Retrieved from middleware
+        flashcardModel.getAllFlashcards(userId, (err, rows) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
@@ -11,12 +12,13 @@ module.exports = {
         });
     },
     addFlashcard: (req, res) => {
-        const { title, content, deck_id, user_id } = req.body;
+        const { title, content, deck_id } = req.body;
+        const userId = req.userId; // Retrieved from middleware
         if (!title || !content) {
             return res.status(400).send('Title and content are required.');
         }
         console.log('Received payload:', req.body);
-        flashcardModel.addFlashcard(title, content, deck_id, user_id, (err, id) => {
+        flashcardModel.addFlashcard(title, content, deck_id, userId, (err, id) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
@@ -26,7 +28,8 @@ module.exports = {
     },
     getFlashcardsByDeck: (req, res) => {
         const { deck_id } = req.params;
-        flashcardModel.getFlashcardsByDeck(deck_id, (err, rows) => {
+        const userId = req.userId; // Retrieved from middleware
+        flashcardModel.getFlashcardsByDeck(deck_id, userId, (err, rows) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
@@ -35,8 +38,12 @@ module.exports = {
         });
     },
     addDeck: (req, res) => {
-        const { name, user_id } = req.body;
-        flashcardModel.addDeck(name, user_id, (err, id) => {
+        const { name } = req.body;
+        const userId = req.userId; // Retrieved from middleware
+        if (!name) {
+            return res.status(400).send('Deck name is required.');
+        }
+        flashcardModel.addDeck(name, userId, (err, id) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {
@@ -45,8 +52,8 @@ module.exports = {
         });
     },
     getAllDecks: (req, res) => {
-        const { user_id } = req.query;
-        flashcardModel.getAllDecks(user_id, (err, rows) => {
+        const userId = req.userId; // Retrieved from middleware
+        flashcardModel.getAllDecks(userId, (err, rows) => {
             if (err) {
                 res.status(500).send(err.message);
             } else {

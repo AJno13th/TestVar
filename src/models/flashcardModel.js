@@ -38,9 +38,12 @@ const db = new sqlite3.Database('./database/testvar.db', (err) => {
 });
 
 module.exports = {
-    getAllFlashcards: (callback) => {
-        db.all('SELECT * FROM flashcards', [], callback);
+    // Fetch all flashcards for a specific user
+    getAllFlashcards: (user_id, callback) => {
+        db.all('SELECT * FROM flashcards WHERE user_id = ?', [user_id], callback);
     },
+
+    // Add a new flashcard with optional deck and user association
     addFlashcard: (title, content, deck_id, user_id, callback) => {
         db.run(
             'INSERT INTO flashcards (title, content, deck_id, user_id) VALUES (?, ?, ?, ?)',
@@ -50,9 +53,17 @@ module.exports = {
             }
         );
     },
-    getFlashcardsByDeck: (deck_id, callback) => {
-        db.all('SELECT * FROM flashcards WHERE deck_id = ?', [deck_id], callback);
+
+    // Fetch flashcards filtered by a specific deck for a user
+    getFlashcardsByDeck: (deck_id, user_id, callback) => {
+        db.all(
+            'SELECT * FROM flashcards WHERE deck_id = ? AND user_id = ?',
+            [deck_id, user_id],
+            callback
+        );
     },
+
+    // Add a new deck associated with a user
     addDeck: (name, user_id, callback) => {
         db.run(
             'INSERT INTO decks (name, user_id) VALUES (?, ?)',
@@ -62,8 +73,9 @@ module.exports = {
             }
         );
     },
+
+    // Fetch all decks for a specific user
     getAllDecks: (user_id, callback) => {
         db.all('SELECT * FROM decks WHERE user_id = ?', [user_id], callback);
     },
-
 };
