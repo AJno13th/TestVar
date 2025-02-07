@@ -1,69 +1,56 @@
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./database/testvar.db', (err) => {
-    if (err) {
-        console.error('Error opening database:', err.message);
-    } else {
-        // Flashcards table
-        db.run(`
-            CREATE TABLE IF NOT EXISTS flashcards (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                content TEXT NOT NULL,
-                hidden BOOLEAN DEFAULT 0,
-                deck_id INTEGER,
-                user_id INTEGER,
-                FOREIGN KEY (deck_id) REFERENCES decks(id),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        `);
-        // Decks table
-        db.run(`
-            CREATE TABLE IF NOT EXISTS decks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                user_id INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        `);
-        // Users table
-        db.run(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL
-            )
-        `);
-    }
-});
+const db = require('/Users/ossai/TestVar/database/initDB.js');
 
 module.exports = {
-    getAllFlashcards: (callback) => {
-        db.all('SELECT * FROM flashcards', [], callback);
+    // Retrieves all flashcards for a given user, marking hidden flashcards
+    getAllFlashcards: (user_id, callback) => {
+        db.all(
+            `SELECT flashcards.*, user_hidden_cards.card_id IS NOT NULL AS hidden
+             FROM flashcards
+             LEFT JOIN user_hidden_cards ON flashcards.id = user_hidden_cards.card_id AND user_hidden_cards.user_id = ?
+             WHERE flashcards.user_id = ?`,
+            [user_id, user_id],
+            callback
+        );
     },
+    
+    // Adds a new flashcard to a specific deck or as a standalone flashcard
     addFlashcard: (title, content, deck_id, user_id, callback) => {
         db.run(
             'INSERT INTO flashcards (title, content, deck_id, user_id) VALUES (?, ?, ?, ?)',
-            [title, content, deck_id || null, user_id || null],
+            [title, content, deck_id || null, user_id],
             function (err) {
-                callback(err, this?.lastID);
+                callback(err, this?.lastID); // Returns the last inserted flashcard ID
             }
         );
     },
-    getFlashcardsByDeck: (deck_id, callback) => {
-        db.all('SELECT * FROM flashcards WHERE deck_id = ?', [deck_id], callback);
+    
+    // Retrieves flashcards belonging to a specific deck for a given user
+    getFlashcardsByDeck: (deck_id, user_id, callback) => {
+        db.all(
+            `SELECT flashcards.*, user_hidden_cards.card_id IS NOT NULL AS hidden
+             FROM flashcards
+             LEFT JOIN user_hidden_cards ON flashcards.id = user_hidden_cards.card_id AND user_hidden_cards.user_id = ?
+             WHERE flashcards.deck_id = ? AND flashcards.user_id = ?`,
+            [user_id, deck_id, user_id],
+            callback
+        );
     },
-    addDeck: (name, user_id, callback) => {
+    
+    // Updates the title and content of an existing flashcard
+    updateFlashcard: (id, title, content, user_id, callback) => {
         db.run(
-            'INSERT INTO decks (name, user_id) VALUES (?, ?)',
-            [name, user_id],
-            function (err) {
-                callback(err, this?.lastID);
-            }
+            'UPDATE flashcards SET title = ?, content = ? WHERE id = ? AND user_id = ?',
+            [title, content, id, user_id],
+            callback
         );
     },
-    getAllDecks: (user_id, callback) => {
-        db.all('SELECT * FROM decks WHERE user_id = ?', [user_id], callback);
+    
+    // Deletes a flashcard owned by the user
+    deleteFlashcard: (id, user_id, callback) => {
+        db.run(
+            'DELETE FROM flashcards WHERE id = ? AND user_id = ?',
+            [id, user_id],
+            callback
+        );
     },
-
 };
